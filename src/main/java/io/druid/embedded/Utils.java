@@ -23,7 +23,11 @@ import io.druid.query.QueryRunner;
 import io.druid.query.QueryToolChest;
 import io.druid.query.QueryWatcher;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Map;
 
 import com.google.common.base.Supplier;
@@ -73,5 +77,17 @@ public class Utils {
 				};
 			}
 		};
+	}
+
+	public static ByteBuffer readFile(File inFile) throws IOException {
+		ByteBuffer mBuf;
+		try (FileInputStream fIn = new FileInputStream(inFile);
+			 FileChannel fChan = fIn.getChannel()) {
+			long fSize = fChan.size();
+			mBuf = ByteBuffer.allocate((int) fSize);
+			fChan.read(mBuf);
+			mBuf.rewind();
+		}
+		return mBuf;
 	}
 }
