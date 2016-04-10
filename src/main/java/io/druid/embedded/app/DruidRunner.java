@@ -131,43 +131,13 @@ public class DruidRunner {
 
     /**
      * Starts the server from the command line
-     * Currently indexes a dummy file, must be modified to index from other locations
+     * Currently indexes nothing, must be modified to index from custom locations
      *
      * @param args Command line arguments
      * @throws Exception Thrown by the server on failure
      */
     public static void main(String[] args) throws Exception {
         // TODO Accept command line parameters to start up Druid
-        new DruidRunner(37843, createDruidSegments()).run();
-    }
-
-    /**
-     * Creates Druid segments from dummy data
-     *
-     * @return QueryableIndex object
-     * @throws IOException Thrown if there's an issue with reading the dummy file and persisting the index
-     */
-    public static QueryableIndex createDruidSegments() throws IOException {
-        //  Create druid segments from raw data
-        Reader reader = new BufferedReader(new FileReader(new File("./src/main/resources/report.csv")));
-
-        List<String> columns = Arrays.asList("colo", "pool", "report", "URL", "TS", "metric", "value", "count", "min", "max", "sum");
-        List<String> exclusions = Arrays.asList("_Timestamp", "_Machine", "_ThreadId", "_Query");
-        List<String> metrics = Arrays.asList("value", "count", "min", "max", "sum");
-        List<String> dimensions = new ArrayList<>(columns);
-        dimensions.removeAll(exclusions);
-        dimensions.removeAll(metrics);
-        Loader loader = new CSVLoader(reader, columns, dimensions, "TS");
-
-        DimensionsSpec dimensionsSpec = new DimensionsSpec(dimensions, null, null);
-        AggregatorFactory[] metricsAgg = new AggregatorFactory[]{
-                new LongSumAggregatorFactory("agg_count", "count"),
-                new MaxAggregatorFactory("agg_max", "max"),
-                new MinAggregatorFactory("agg_min", "min"),
-                new DoubleSumAggregatorFactory("agg_sum", "sum"),
-                new ApproximateHistogramAggregatorFactory("agg_histogram", "value", null, null, null, null)
-        };
-        IncrementalIndexSchema indexSchema = new IncrementalIndexSchema(0, QueryGranularity.ALL, dimensionsSpec, metricsAgg);
-        return IndexHelper.getQueryableIndex(loader, indexSchema);
+        new DruidRunner(37843, null).run();
     }
 }
