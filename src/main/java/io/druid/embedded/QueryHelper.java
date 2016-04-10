@@ -93,6 +93,14 @@ public class QueryHelper {
         return findFactory(query).createRunner(new QueryableIndexSegment("", index)).run(query, null);
     }
 
+    /**
+     * Parses a query JSON and executes it on the given index
+     *
+     * @param queryJson Query JSON
+     * @param index     Index to execute query on
+     * @return Result of the query
+     * @throws IOException
+     */
     public static Sequence run(String queryJson, QueryableIndex index) throws IOException {
         return run(getQuery(queryJson), index);
     }
@@ -176,6 +184,15 @@ public class QueryHelper {
         return jsonMapper.readValue(queryInputStream, Query.class);
     }
 
+    /**
+     * Converts the given query JSON into a Query object
+     *
+     * @param queryJson query JSON
+     * @return Query object containing the query
+     * @throws JsonParseException   Thrown if JSON parsing failed
+     * @throws JsonMappingException Thrown if there was a problem mapping the JSON
+     * @throws IOException          Thrown by the readValue method
+     */
     public static Query getQuery(String queryJson) throws JsonParseException,
             JsonMappingException, IOException {
         return jsonMapper.readValue(queryJson, Query.class);

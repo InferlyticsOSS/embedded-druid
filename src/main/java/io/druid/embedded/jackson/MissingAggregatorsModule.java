@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.druid.jackson;
+package io.druid.embedded.jackson;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -36,6 +36,7 @@ import io.druid.query.aggregation.post.JavaScriptPostAggregator;
 import io.druid.segment.serde.ComplexMetrics;
 
 /**
+ * Contains the aggregators that are missing from the AggregatorsModule
  */
 public class MissingAggregatorsModule extends SimpleModule {
     public MissingAggregatorsModule() {
@@ -67,6 +68,7 @@ public class MissingAggregatorsModule extends SimpleModule {
             @JsonSubTypes.Type(name = "hyperUnique", value = HyperUniquesAggregatorFactory.class),
             @JsonSubTypes.Type(name = "cardinality", value = CardinalityAggregatorFactory.class),
             @JsonSubTypes.Type(name = "filtered", value = FilteredAggregatorFactory.class),
+            // This is not present in the AggregatorsModule
             @JsonSubTypes.Type(name = "approxHistogramFold", value = ApproximateHistogramFoldingAggregatorFactory.class)
     })
     public static interface AggregatorFactoryMixin {
@@ -79,6 +81,7 @@ public class MissingAggregatorsModule extends SimpleModule {
             @JsonSubTypes.Type(name = "constant", value = ConstantPostAggregator.class),
             @JsonSubTypes.Type(name = "javascript", value = JavaScriptPostAggregator.class),
             @JsonSubTypes.Type(name = "hyperUniqueCardinality", value = HyperUniqueFinalizingPostAggregator.class),
+            // These are not present in the AggregatorsModule
             @JsonSubTypes.Type(name = "quantile", value = QuantilePostAggregator.class),
             @JsonSubTypes.Type(name = "quantiles", value = QuantilesPostAggregator.class)
     })

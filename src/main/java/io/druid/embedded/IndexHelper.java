@@ -65,8 +65,7 @@ public class IndexHelper {
         if (tmpDir == null) {
             tmpDir = System.getProperty("java.io.tmpdir") + File.separator + "druid-tmp-index-";
         }
-        String indexDirName = tmpDir + loader.hashCode();
-        File tmpIndexDir = new File(indexDirName);
+        File tmpIndexDir = new File(tmpDir + loader.hashCode());
         EmbeddedIndexMerger.persist(incIndex, tmpIndexDir, null, new IndexSpec());
         return IndexIO.loadIndex(tmpIndexDir);
     }
@@ -79,7 +78,6 @@ public class IndexHelper {
      * @throws IOException
      */
     public static QueryableIndex getQueryableIndex(File indexDir) throws IOException {
-        QueryableIndex index = IndexIO.loadIndex(indexDir);
-        return index;
+        return IndexIO.loadIndex(indexDir);
     }
 }

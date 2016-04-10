@@ -25,6 +25,9 @@ import javax.ws.rs.core.Response;
 public class DruidResource {
     private static final Logger LOG = Logger.getLogger(DruidResource.class);
 
+    /**
+     * Used as a response in case of failure
+     */
     private class FailureResponse {
         private String message;
 
@@ -40,10 +43,10 @@ public class DruidResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response query(@Context HttpServletRequest req, String query) {
+    public Response query(@Context HttpServletRequest req, String queryJson) {
         try {
             int indexKey = req.getServerPort();
-            return Response.ok(QueryHelper.jsonMapper.writeValueAsString(DruidService.handleQuery(indexKey, query))).build();
+            return Response.ok(QueryHelper.jsonMapper.writeValueAsString(DruidService.handleQuery(indexKey, queryJson))).build();
         } catch (JsonMappingException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(new FailureResponse(e.getMessage())).build();
         } catch (Exception e) {

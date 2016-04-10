@@ -48,6 +48,7 @@ public class DruidRunner {
 
     /**
      * Starts the Druid instance and returns the server it is running on
+     *
      * @return server hosting Druid
      * @throws Exception
      */
@@ -68,8 +69,9 @@ public class DruidRunner {
     }
 
     /**
+     * Builds the Swagger documentation
      *
-     * @param basePath
+     * @param basePath Base path where the resources reside
      */
     private static void buildSwagger(String basePath) {
         // This configures Swagger
@@ -82,7 +84,12 @@ public class DruidRunner {
         beanConfig.setScan(true);
     }
 
-
+    /**
+     * Adds resources to the context to be run on the server
+     *
+     * @param basePath Path to add the resources on
+     * @return ContextHandler to add on the server
+     */
     private static ContextHandler buildContext(String basePath) {
         ResourceConfig resourceConfig = new ResourceConfig();
         resourceConfig.packages(DruidResource.class.getPackage().getName(), ApiListingResource.class.getPackage().getName());
@@ -103,20 +110,43 @@ public class DruidRunner {
         return entityBrowserContext;
     }
 
+    /**
+     * Runs Druid and blocks until the server is stopped
+     *
+     * @throws Exception
+     */
     public void runBlocking() throws Exception {
         run().join();
     }
 
+    /**
+     * Stops the server and removes the index
+     *
+     * @throws Exception
+     */
     public void stop() throws Exception {
         INDEX_MAP.remove(port);
         server.stop();
     }
 
+    /**
+     * Starts the server from the command line
+     * Currently indexes a dummy file, must be modified to index from other locations
+     *
+     * @param args Command line arguments
+     * @throws Exception Thrown by the server on failure
+     */
     public static void main(String[] args) throws Exception {
         // TODO Accept command line parameters to start up Druid
         new DruidRunner(37843, createDruidSegments()).run();
     }
 
+    /**
+     * Creates Druid segments from dummy data
+     *
+     * @return QueryableIndex object
+     * @throws IOException Thrown if there's an issue with reading the dummy file and persisting the index
+     */
     public static QueryableIndex createDruidSegments() throws IOException {
         //  Create druid segments from raw data
         Reader reader = new BufferedReader(new FileReader(new File("./src/main/resources/report.csv")));

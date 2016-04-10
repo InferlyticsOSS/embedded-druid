@@ -3,16 +3,15 @@ package io.druid.embedded.jackson;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.druid.jackson.DefaultObjectMapper;
-import io.druid.jackson.MissingAggregatorsModule;
 
 /**
- * Adds support for missing Aggregator Factories
+ * Deserializes Query Json to be used by the Query helper, and serializes result
  */
 public class QueryObjectMapper extends DefaultObjectMapper {
     private static final long serialVersionUID = 1231241241241L;
 
     public QueryObjectMapper() {
-        this((JsonFactory)null);
+        this((JsonFactory) null);
     }
 
     public QueryObjectMapper(QueryObjectMapper mapper) {
