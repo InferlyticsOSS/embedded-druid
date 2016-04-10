@@ -20,6 +20,7 @@ import io.druid.data.input.InputRow;
 import io.druid.embedded.load.Loader;
 import io.druid.query.aggregation.histogram.ApproximateHistogramFoldingSerde;
 import io.druid.segment.IndexIO;
+import io.druid.segment.IndexMerger;
 import io.druid.segment.IndexSpec;
 import io.druid.segment.QueryableIndex;
 import io.druid.segment.incremental.IncrementalIndex;
@@ -66,7 +67,7 @@ public class IndexHelper {
             tmpDir = System.getProperty("java.io.tmpdir") + File.separator + "druid-tmp-index-";
         }
         File tmpIndexDir = new File(tmpDir + loader.hashCode());
-        EmbeddedIndexMerger.persist(incIndex, tmpIndexDir, null, new IndexSpec());
+        IndexMerger.persist(incIndex, tmpIndexDir, null, new IndexSpec());
         return IndexIO.loadIndex(tmpIndexDir);
     }
 
