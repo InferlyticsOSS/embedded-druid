@@ -16,10 +16,8 @@
 
 package io.druid.embedded;
 
-import java.io.File;
-import java.io.IOException;
-
 import io.druid.data.input.InputRow;
+import io.druid.embedded.load.Loader;
 import io.druid.query.aggregation.histogram.ApproximateHistogramFoldingSerde;
 import io.druid.segment.IndexIO;
 import io.druid.segment.IndexMerger;
@@ -30,59 +28,57 @@ import io.druid.segment.incremental.IncrementalIndexSchema;
 import io.druid.segment.incremental.OnheapIncrementalIndex;
 import io.druid.segment.serde.ComplexMetrics;
 
-import io.druid.embedded.load.Loader;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * This is a Helper class which reads content of file and generates required index/segment files and persist it.
  * It also provides queryable index object after loading file into memory.
- *
  */
 public class IndexHelper {
 
-	  /**
-	   * Initialization (handled by Guice in Druid system)
-	   */
-	  static {
-	    ApproximateHistogramFoldingSerde serde = new ApproximateHistogramFoldingSerde();
-	    ComplexMetrics.registerSerde(serde.getTypeName(), serde);
-	  }
+    /**
+     * Initialization (handled by Guice in Druid system)
+     */
+    static {
+        ApproximateHistogramFoldingSerde serde = new ApproximateHistogramFoldingSerde();
+        ComplexMetrics.registerSerde(serde.getTypeName(), serde);
+    }
 
-	  /**
-	   * The only way to get a QueryableIndex from IncrementalIndex is to persist the IncrementalIndex
-	   * and reload it. This methods does that.
-	   *
-	   * @param loader
-	   * @param aggregates
-	   * @return
-	   * @throws IOException
-	   */
-	  public static QueryableIndex getQueryableIndex(Loader loader, IncrementalIndexSchema indexSchema)
-	      throws IOException {
+    /**
+     * The only way to get a QueryableIndex from IncrementalIndex is to persist the IncrementalIndex
+     * and reload it. This methods does that.
+     *
+     * @param loader //     * @param aggregates
+     * @return
+     * @throws IOException
+     */
+    public static QueryableIndex getQueryableIndex(Loader loader, IncrementalIndexSchema indexSchema)
+            throws IOException {
 //	    IncrementalIndex<?> incIndex =
 //	        new OffheapIncrementalIndex(indexSchema, Utils.getBufferPool(), true, maxTotalBufferSize);
-	    IncrementalIndex<?> incIndex = new OnheapIncrementalIndex(indexSchema, Integer.MAX_VALUE);
+        IncrementalIndex<?> incIndex = new OnheapIncrementalIndex(indexSchema, Integer.MAX_VALUE);
 
-	    for (InputRow row : loader) {
-	      incIndex.add(row);
-	    }
-	    String tmpDir = System.getProperty("druid.segment.dir");
-	    if(tmpDir == null) {
-	    	tmpDir = System.getProperty("java.io.tmpdir") + File.separator +  "druid-tmp-index-";
-	    }
-	    File tmpIndexDir = new File(tmpDir + loader.hashCode());
-	    IndexMerger.persist(incIndex, tmpIndexDir, new IndexSpec());
-	    return IndexIO.loadIndex(tmpIndexDir);
-	  }
+        for (InputRow row : loader) {
+            incIndex.add(row);
+        }
+        String tmpDir = System.getProperty("druid.segment.dir");
+        if (tmpDir == null) {
+            tmpDir = System.getProperty("java.io.tmpdir") + File.separator + "druid-tmp-index-";
+        }
+        File tmpIndexDir = new File(tmpDir + loader.hashCode());
+        IndexMerger.persist(incIndex, tmpIndexDir, null, new IndexSpec());
+        return IndexIO.loadIndex(tmpIndexDir);
+    }
 
-	  /**
-	   * Get QueryableIndex from index directory.
-	   *
-	   * @param indexDir
-	   * @return
-	   * @throws IOException
-	   */
-	  public static QueryableIndex getQueryableIndex(File indexDir) throws IOException {
-	    QueryableIndex index = IndexIO.loadIndex(indexDir);
-	    return index;
-	  }
+    /**
+     * Get QueryableIndex from index directory.
+     *
+     * @param indexDir
+     * @return
+     * @throws IOException
+     */
+    public static QueryableIndex getQueryableIndex(File indexDir) throws IOException {
+        return IndexIO.loadIndex(indexDir);
+    }
 }

@@ -23,7 +23,11 @@ import io.druid.query.QueryRunner;
 import io.druid.query.QueryToolChest;
 import io.druid.query.QueryWatcher;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Map;
 
 import com.google.common.base.Supplier;
@@ -33,45 +37,47 @@ import com.metamx.emitter.core.Event;
 import com.metamx.emitter.service.ServiceEmitter;
 
 public class Utils {
-	public static final int MAX_TOTAL_BUFFER_SIZE = 1024*1024*1024;
-	
-	private static class ByteBufferSuplier implements Supplier<ByteBuffer> {
-		int capacity;
+    public static final int MAX_TOTAL_BUFFER_SIZE = 1024 * 1024 * 1024;
 
-		public ByteBufferSuplier(int capacity) {
-			this.capacity = capacity;
-		}
+    private static class ByteBufferSuplier implements Supplier<ByteBuffer> {
+        int capacity;
 
-		public ByteBuffer get() {
-			return ByteBuffer.allocate(capacity);
-		}
-	}
-	
-	public static ServiceEmitter NOOP_SERVICE_EMITTER = new ServiceEmitter(null, null, null) {
-		@Override
-	    public void emit(Event event) {}
-	};
+        public ByteBufferSuplier(int capacity) {
+            this.capacity = capacity;
+        }
 
-	public static final QueryWatcher NOOP_QUERYWATCHER = new QueryWatcher() {
-		@SuppressWarnings("rawtypes")
-	    public void registerQuery(Query query, ListenableFuture future) {}
-	};
-	
-	public static StupidPool<ByteBuffer> getBufferPool() {
-	    return new StupidPool<ByteBuffer>(new ByteBufferSuplier(MAX_TOTAL_BUFFER_SIZE / 2));
-	}
+        public ByteBuffer get() {
+            return ByteBuffer.allocate(capacity);
+        }
+    }
 
-	public static IntervalChunkingQueryRunnerDecorator NoopIntervalChunkingQueryRunnerDecorator() {
-		return new IntervalChunkingQueryRunnerDecorator(null, null, null) {
-			@Override
-			public <T> QueryRunner<T> decorate(final QueryRunner<T> delegate,
-					QueryToolChest<T, ? extends Query<T>> toolChest) {
-				return new QueryRunner<T>() {
-		          public Sequence<T> run(Query<T> query, Map<String, Object> responseContext) {
-		            return delegate.run(query, responseContext);
-		          }
-				};
-			}
-		};
-	}
+    public static ServiceEmitter NOOP_SERVICE_EMITTER = new ServiceEmitter(null, null, null) {
+        @Override
+        public void emit(Event event) {
+        }
+    };
+
+    public static final QueryWatcher NOOP_QUERYWATCHER = new QueryWatcher() {
+        @SuppressWarnings("rawtypes")
+        public void registerQuery(Query query, ListenableFuture future) {
+        }
+    };
+
+    public static StupidPool<ByteBuffer> getBufferPool() {
+        return new StupidPool<ByteBuffer>(new ByteBufferSuplier(MAX_TOTAL_BUFFER_SIZE / 2));
+    }
+
+    public static IntervalChunkingQueryRunnerDecorator NoopIntervalChunkingQueryRunnerDecorator() {
+        return new IntervalChunkingQueryRunnerDecorator(null, null, null) {
+            @Override
+            public <T> QueryRunner<T> decorate(final QueryRunner<T> delegate,
+                                               QueryToolChest<T, ? extends Query<T>> toolChest) {
+                return new QueryRunner<T>() {
+                    public Sequence<T> run(Query<T> query, Map<String, Object> responseContext) {
+                        return delegate.run(query, responseContext);
+                    }
+                };
+            }
+        };
+    }
 }

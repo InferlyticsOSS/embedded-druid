@@ -1,46 +1,60 @@
-/*
- * Copyright 2015 eBay Software Foundation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package io.druid.embedded.resource;
 
-package io.druid.embedded;
-
-import com.google.common.collect.Lists;
-import com.metamx.common.guava.Sequence;
-import com.metamx.common.guava.Sequences;
 import io.druid.data.input.Row;
+import io.druid.embedded.QueryHelper;
+import io.druid.embedded.app.DruidRunner;
+import io.druid.embedded.helper.DruidClient;
 import io.druid.embedded.helper.IndexCreationHelper;
 import io.druid.embedded.helper.QueryCreationHelper;
 import io.druid.query.Query;
 import io.druid.query.Result;
-import io.druid.segment.QueryableIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
-public class EmbeddedDruidTest {
+/**
+ * Tests querying the server
+ */
+public class DruidResourceTest {
+    private static final Logger LOG = LoggerFactory.getLogger(DruidResourceTest.class);
+    private static final int PORT;
+    private static final DruidRunner druidRunner;
+    private static final DruidClient client;
+
+    static {
+        PORT = 2000 + new Random().nextInt(60000);
+        client = new DruidClient("http://localhost:" + PORT + "/druid/v2");
+        try {
+            druidRunner = new DruidRunner(PORT, IndexCreationHelper.createDruidSegments());
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not create index", e);
+        }
+    }
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        druidRunner.run();
+    }
 
     @Test
-    public void groupByQuery() throws IOException {
-        QueryableIndex index = IndexCreationHelper.createDruidSegments();
-        Query query = QueryCreationHelper.getGroupByQuery();
+    public void testTopNQuery() throws Exception {
+        Query query = QueryCreationHelper.getTopNQuery();
+        List<Result> results = client.topN(query);
+        Assert.assertEquals(results.size(), 1);
+    }
 
-        @SuppressWarnings("unchecked")
-        Sequence<Row> sequence = QueryHelper.run(query, index);
-        ArrayList<Row> results = Sequences.toList(sequence, Lists.<Row>newArrayList());
+    @Test
+    public void testGroupByQuery() throws Exception {
+        Query query = QueryCreationHelper.getGroupByQuery();
+        LOG.info(QueryHelper.jsonMapper.writeValueAsString(query));
+        List<Row> results = client.groupBy(query);
         Assert.assertEquals(results.size(), 2);
 
         if (results.get(0).getDimension("URL").get(0).equals("abc")) {
@@ -65,14 +79,8 @@ public class EmbeddedDruidTest {
         }
     }
 
-    @Test
-    public void topNQuery() throws IOException {
-        QueryableIndex index = IndexCreationHelper.createDruidSegments();
-        Query query = QueryCreationHelper.getTopNQuery();
-        @SuppressWarnings("unchecked")
-        Sequence<Result> sequence = QueryHelper.run(query, index);
-        ArrayList<Result> results = Sequences.toList(sequence, Lists.<Result>newArrayList());
-        Assert.assertEquals(results.size(), 1);
+    @AfterClass
+    public static void tearDown() throws Exception {
+        druidRunner.stop();
     }
-
 }
