@@ -1,15 +1,7 @@
 package io.druid.embedded.app;
 
-import io.druid.data.input.impl.DimensionsSpec;
-import io.druid.embedded.IndexHelper;
-import io.druid.embedded.load.Loader;
-import io.druid.embedded.load.impl.CSVLoader;
 import io.druid.embedded.resource.DruidResource;
-import io.druid.granularity.QueryGranularity;
-import io.druid.query.aggregation.*;
-import io.druid.query.aggregation.histogram.ApproximateHistogramAggregatorFactory;
 import io.druid.segment.QueryableIndex;
-import io.druid.segment.incremental.IncrementalIndexSchema;
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.eclipse.jetty.server.Server;
@@ -23,8 +15,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import javax.servlet.DispatcherType;
-import java.io.*;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Starts a standalone instance of Druid
